@@ -18,7 +18,8 @@ def home():
     return "Bot is alive!"
 
 def run():
-    app.run(host='0.0.0.0', port=8080)
+    port = int(os.environ.get("PORT", 8080))  # Use the PORT environment variable or default to 8080
+    app.run(host='0.0.0.0', port=port)
 
 def keep_alive():
     t = Thread(target=run)
@@ -315,4 +316,85 @@ async def commands(ctx):
     )
 
     # Utility Commands
-    embed
+    embed.add_field(
+        name=" Utility",
+        value=""" 
+        `!ping` - Check bot latency
+        `!commands` - Show this help message
+        """,
+        inline=False
+    )
+
+    embed.set_footer(text="Elite Honor Guard Overwatch")
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def punishments(ctx):
+    if not punishment_logs:
+        embed = create_embed("Punishment Logs", "No punishments have been recorded.")
+        await ctx.send(embed=embed)
+        return
+
+    embed = create_embed("Punishment Logs", "Here are all recorded punishments:")
+    
+    for index, punishment in enumerate(punishment_logs):
+        timestamp = datetime.datetime.fromisoformat(punishment["timestamp"]).strftime("%Y-%m-%d %H:%M UTC")
+        embed.add_field(
+            name=f"{index + 1}. {punishment['type'].title()} - {punishment['user']}",
+            value=f"Reason: {punishment['reason']}\nModerator: {punishment['moderator']}\nTime: {timestamp}",
+            inline=False
+        )
+
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def removepunishment(ctx, index: int):
+    if not 1 <= index <= len(punishment_logs):
+        await ctx.send("Invalid punishment index!")
+        return
+
+    removed = punishment_logs.pop(index - 1)
+    save_punishments(punishment_logs)
+    
+    embed = create_embed(
+        "Punishment Removed",
+        f"Removed {removed['type']} for {removed['user']}\nReason was: {removed['reason']}"
+    )
+    await ctx.send(embed=embed)
+
+# Error handling
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have permission to use this command!")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f"Missing required argument! Usage: {ctx.command.name} {ctx.command.signature}")
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send("Command not found!")
+    else:
+        print(f"Command error: {str(error)}")
+        await ctx.send(f"An error occurred: {str(error)}")
+
+# Status rotation
+@tasks.loop(seconds=30)
+async def change_status():
+    global current_status
+    status_type, status_message = status_messages[current_status]
+
+    if status_type == "watching":
+        activity_type = discord.ActivityType.watching
+    elif status_type == "playing":
+        activity_type = discord.ActivityType.playing
+    elif status_type == "listening":
+        activity_type = discord.ActivityType.listening
+    
+    await bot.change_presence(activity=discord.Activity(
+        type=activity_type,
+        name=status_message
+    ))
+    
+    current_status = (current_status + 1) % len(status_messages)
+
+# Start the bot
+keep_alive()
+bot.run(os.environ['TOKEN'])
