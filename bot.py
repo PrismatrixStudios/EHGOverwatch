@@ -4,7 +4,6 @@ import datetime
 from flask import Flask
 from threading import Thread
 import os
-import sys
 import json
 
 # Bot setup
@@ -79,7 +78,7 @@ async def on_ready():
 async def promote(ctx, member: discord.Member, *, reason=None):
     embed = create_embed(
         "Promotion Announcement",
-        f" {member.mention} has been promoted by {ctx.author.mention}!\nReason: {reason if reason else 'No reason provided'}"
+        f"{member.mention} has been promoted by {ctx.author.mention}!\nReason: {reason if reason else 'No reason provided'}"
     )
     await ctx.send(f"{member.mention}", embed=embed)
 
@@ -87,7 +86,7 @@ async def promote(ctx, member: discord.Member, *, reason=None):
 async def demote(ctx, member: discord.Member, *, reason=None):
     embed = create_embed(
         "Demotion Notice",
-        f" {member.mention} has been demoted by {ctx.author.mention}.\nReason: {reason if reason else 'No reason provided'}",
+        f"{member.mention} has been demoted by {ctx.author.mention}.\nReason: {reason if reason else 'No reason provided'}",
         discord.Color.red()
     )
     await ctx.send(f"{member.mention}", embed=embed)
@@ -96,7 +95,7 @@ async def demote(ctx, member: discord.Member, *, reason=None):
 async def terminate(ctx, member: discord.Member, *, reason=None):
     embed = create_embed(
         "Termination Notice",
-        f" {member.mention} has been terminated by {ctx.author.mention}.\nReason: {reason if reason else 'No reason provided'}",
+        f"{member.mention} has been terminated by {ctx.author.mention}.\nReason: {reason if reason else 'No reason provided'}",
         discord.Color.dark_red()
     )
     await ctx.send(f"{member.mention}", embed=embed)
@@ -105,7 +104,7 @@ async def terminate(ctx, member: discord.Member, *, reason=None):
 async def deploy(ctx, *, details):
     embed = create_embed(
         "Deployment Announcement",
-        f" New Deployment\n\nDetails: {details}",
+        f"New Deployment\n\nDetails: {details}",
         discord.Color.green()
     )
     await ctx.send("@everyone", embed=embed)
@@ -114,10 +113,21 @@ async def deploy(ctx, *, details):
 async def training(ctx, *, details):
     embed = create_embed(
         "Training Announcement",
-        f" Training Session\n\nDetails: {details}",
+        f"Training Session\n\nDetails: {details}",
         discord.Color.gold()
     )
     await ctx.send("@everyone", embed=embed)
+
+# New Announcement Command
+@bot.command()
+async def annc(ctx, *, announcement):
+    embed = create_embed(
+        "Announcement",
+        announcement,
+        discord.Color.blue()
+    )
+    await ctx.send(embed=embed)
+    await ctx.message.delete()  # Delete the command message
 
 # Moderation Commands
 @bot.command()
@@ -126,12 +136,11 @@ async def kick(ctx, member: discord.Member, *, reason=None):
     await member.kick(reason=reason)
     embed = create_embed(
         "Member Kicked",
-        f" {member.mention} has been kicked.\nReason: {reason if reason else 'No reason provided'}",
+        f"{member.mention} has been kicked.\nReason: {reason if reason else 'No reason provided'}",
         discord.Color.orange()
     )
     await ctx.send(embed=embed)
 
-    # Add to punishment logs
     punishment_logs.append({
         "type": "kick",
         "user": str(member),
@@ -141,7 +150,7 @@ async def kick(ctx, member: discord.Member, *, reason=None):
         "moderator_id": ctx.author.id,
         "timestamp": datetime.datetime.utcnow().isoformat()
     })
-    save_punishments(punishment_logs)  # Save after adding new punishment
+    save_punishments(punishment_logs)
 
 @bot.command()
 @commands.has_permissions(ban_members=True)
@@ -149,12 +158,11 @@ async def ban(ctx, member: discord.Member, *, reason=None):
     await member.ban(reason=reason)
     embed = create_embed(
         "Member Banned",
-        f" {member.mention} has been banned.\nReason: {reason if reason else 'No reason provided'}",
+        f"{member.mention} has been banned.\nReason: {reason if reason else 'No reason provided'}",
         discord.Color.dark_red()
     )
     await ctx.send(embed=embed)
 
-    # Add to punishment logs
     punishment_logs.append({
         "type": "ban",
         "user": str(member),
@@ -164,13 +172,13 @@ async def ban(ctx, member: discord.Member, *, reason=None):
         "moderator_id": ctx.author.id,
         "timestamp": datetime.datetime.utcnow().isoformat()
     })
-    save_punishments(punishment_logs)  # Save after adding new punishment
+    save_punishments(punishment_logs)
 
 @bot.command()
 async def warn(ctx, member: discord.Member, *, reason):
     embed = create_embed(
         "Warning Issued",
-        f" {member.mention} has been warned.\nReason: {reason}",
+        f"{member.mention} has been warned.\nReason: {reason}",
         discord.Color.gold()
     )
     punishment_logs.append({
@@ -182,14 +190,14 @@ async def warn(ctx, member: discord.Member, *, reason):
         "moderator_id": ctx.author.id,
         "timestamp": datetime.datetime.utcnow().isoformat()
     })
-    save_punishments(punishment_logs)  # Save after adding new punishment
+    save_punishments(punishment_logs)
     await ctx.send(f"{member.mention}", embed=embed)
 
 @bot.command()
 async def strike(ctx, member: discord.Member, *, reason):
     embed = create_embed(
         "Strike Issued",
-        f" {member.mention} has received a strike.\nReason: {reason}",
+        f"{member.mention} has received a strike.\nReason: {reason}",
         discord.Color.red()
     )
     punishment_logs.append({
@@ -201,12 +209,12 @@ async def strike(ctx, member: discord.Member, *, reason):
         "moderator_id": ctx.author.id,
         "timestamp": datetime.datetime.utcnow().isoformat()
     })
-    save_punishments(punishment_logs)  # Save after adding new punishment
+    save_punishments(punishment_logs)
     await ctx.send(f"{member.mention}", embed=embed)
 
 @bot.command()
 async def ping(ctx):
-    await ctx.send(f" Pong! {round(bot.latency * 1000)}ms")
+    await ctx.send(f"Pong! {round(bot.latency * 1000)}ms")
 
 @bot.command()
 async def devmode(ctx, code):
@@ -248,7 +256,7 @@ async def shutdown(ctx):
     if dev_mode:
         embed = create_embed(
             "Shutdown",
-            "Bot is shutting down... ",
+            "Bot is shutting down...",
             discord.Color.red()
         )
         await ctx.send(embed=embed)
@@ -273,7 +281,7 @@ async def commands(ctx):
     # Administrative Commands
     embed.add_field(
         name=" Administrative",
-        value="""
+        value=""" 
         `!promote @user [reason]` - Promote a member
         `!demote @user [reason]` - Demote a member
         `!terminate @user [reason]` - Terminate a member
@@ -284,9 +292,10 @@ async def commands(ctx):
     # Announcement Commands
     embed.add_field(
         name=" Announcements",
-        value="""
+        value=""" 
         `!deploy <details>` - Make a deployment announcement
         `!training <details>` - Make a training announcement
+        `!annc <announcement>` - Make an announcement
         """,
         inline=False
     )
@@ -294,7 +303,7 @@ async def commands(ctx):
     # Moderation Commands
     embed.add_field(
         name=" Moderation",
-        value="""
+        value=""" 
         `!kick @user [reason]` - Kick a member
         `!ban @user [reason]` - Ban a member
         `!warn @user <reason>` - Warn a member
@@ -306,85 +315,4 @@ async def commands(ctx):
     )
 
     # Utility Commands
-    embed.add_field(
-        name=" Utility",
-        value="""
-        `!ping` - Check bot latency
-        `!commands` - Show this help message
-        """,
-        inline=False
-    )
-
-    embed.set_footer(text="Elite Honor Guard Overwatch")
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def punishments(ctx):
-    if not punishment_logs:
-        embed = create_embed("Punishment Logs", "No punishments have been recorded.")
-        await ctx.send(embed=embed)
-        return
-
-    embed = create_embed("Punishment Logs", "Here are all recorded punishments:")
-    
-    for index, punishment in enumerate(punishment_logs):
-        timestamp = datetime.datetime.fromisoformat(punishment["timestamp"]).strftime("%Y-%m-%d %H:%M UTC")
-        embed.add_field(
-            name=f"{index + 1}. {punishment['type'].title()} - {punishment['user']}",
-            value=f"Reason: {punishment['reason']}\nModerator: {punishment['moderator']}\nTime: {timestamp}",
-            inline=False
-        )
-
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def removepunishment(ctx, index: int):
-    if not 1 <= index <= len(punishment_logs):
-        await ctx.send("Invalid punishment index!")
-        return
-
-    removed = punishment_logs.pop(index - 1)
-    save_punishments(punishment_logs)  # Save after removing punishment
-    
-    embed = create_embed(
-        "Punishment Removed",
-        f"Removed {removed['type']} for {removed['user']}\nReason was: {removed['reason']}"
-    )
-    await ctx.send(embed=embed)
-
-# Error handling
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("You don't have permission to use this command!")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"Missing required argument! Usage: {ctx.command.name} {ctx.command.signature}")
-    elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("Command not found!")
-    else:
-        print(f"Command error: {str(error)}")
-        await ctx.send(f"An error occurred: {str(error)}")
-
-# Status rotation
-@tasks.loop(seconds=30)
-async def change_status():
-    global current_status
-    status_type, status_message = status_messages[current_status]
-
-    if status_type == "watching":
-        activity_type = discord.ActivityType.watching
-    elif status_type == "playing":
-        activity_type = discord.ActivityType.playing
-    elif status_type == "listening":
-        activity_type = discord.ActivityType.listening
-    
-    await bot.change_presence(activity=discord.Activity(
-        type=activity_type,
-        name=status_message
-    ))
-    
-    current_status = (current_status + 1) % len(status_messages)
-
-# Start the bot
-keep_alive()
-bot.run(os.environ['TOKEN'])
+    embed
