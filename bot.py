@@ -6,6 +6,7 @@ from threading import Thread
 import os
 import json
 import random
+from discord.ext.commands import MissingPermissions
 
 # Bot setup
 intents = discord.Intents.all()
@@ -366,7 +367,7 @@ async def removepunishment(ctx, index: int):
 # Error handling
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.errors.MissingPermissions):
+    if isinstance(error, MissingPermissions):
         await ctx.send("You don't have permission to use this command!")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing required argument! Usage: {ctx.command.name} {ctx.command.signature}")
