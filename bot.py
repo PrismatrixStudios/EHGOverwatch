@@ -9,7 +9,8 @@ import random
 from discord.ext.commands import MissingPermissions
 
 # Bot setup
-intents = discord.Intents.all()
+intents = discord.Intents.default()
+intents.messages = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 # Keep alive server
@@ -368,10 +369,16 @@ async def removepunishment(ctx, index: int):
 async def test(ctx):
     await ctx.send("The bot is working!")
 
+@bot.command()
+async def depend(ctx):
+    response = "The Deployment Has Ended"
+    await ctx.send(response)  # Send the response
+    await ctx.message.delete()  # Delete the command message
+
 # Error handling
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, MissingPermissions):
+    if isinstance(error, commands.MissingPermissions):
         await ctx.send("You don't have permission to use this command!")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing required argument! Usage: {ctx.command.name} {ctx.command.signature}")
