@@ -5,6 +5,7 @@ from flask import Flask
 from threading import Thread
 import os
 import json
+import random
 
 # Bot setup
 intents = discord.Intents.all()
@@ -398,3 +399,33 @@ async def change_status():
 # Start the bot
 keep_alive()
 bot.run(os.environ['TOKEN'])
+
+class ChatBot:
+    def __init__(self):
+        self.responses = [
+            "Hello! How can I assist you today?",
+            "I'm here to help you with your queries.",
+            "What would you like to know?",
+            "Feel free to ask me anything!"
+        ]
+        self.commands = {
+            "!depend": self.depend_command
+        }
+
+    def get_response(self):
+        return random.choice(self.responses)
+
+    def depend_command(self):
+        response = "The Deployment Has Ended"
+        # Remove the command from the commands list
+        del self.commands["!depend"]
+        return response
+
+    def handle_command(self, command):
+        if command in self.commands:
+            return self.commands[command]()
+        return "Unknown command."
+
+if __name__ == "__main__":
+    bot = ChatBot()
+    print(bot.get_response())
