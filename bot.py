@@ -366,7 +366,7 @@ async def removepunishment(ctx, index: int):
 # Error handling
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
+    if isinstance(error, commands.errors.MissingPermissions):
         await ctx.send("You don't have permission to use this command!")
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing required argument! Usage: {ctx.command.name} {ctx.command.signature}")
