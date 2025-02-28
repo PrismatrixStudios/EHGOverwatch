@@ -364,6 +364,10 @@ async def removepunishment(ctx, index: int):
     )
     await ctx.send(embed=embed)
 
+@bot.command()
+async def test(ctx):
+    await ctx.send("The bot is working!")
+
 # Error handling
 @bot.event
 async def on_command_error(ctx, error):
